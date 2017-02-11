@@ -190,11 +190,11 @@ d3.csv("hbs_data.csv", function(error, data) {
   
 
   //for all ds, restore    
-
   temp = [];
  
   //only for one d
   function restorePlot(d) {
+  	temp =[];
     console.log("restoring");
     console.log(d);
     temp.push(d);
@@ -206,6 +206,8 @@ d3.csv("hbs_data.csv", function(error, data) {
     
     last_elem = selected_d_objects.length - 1;
     
+    console.log("%%%%%%%%%%selected d objects array");
+    console.log(selected_d_objects);
     //push all other cols above deselected one into temp array
     while(selected_d_objects[last_elem] != d){
     	if(!temp.includes(selected_d_objects[last_elem])){
@@ -260,8 +262,12 @@ d3.csv("hbs_data.csv", function(error, data) {
     
     console.log("HERE WE START REPLOTTING!!!!!!!");
     //re-plot remaining items in temp
-    setTimeout(replot, 0); //delay by 2 seconds
+    index = 0;  //reset to zero after each deselection, ie each time this function is called
+    if (temp.length > 0){
+    	setTimeout(replot, 0); //delay by 2 seconds
+	}
 
+	
     console.log("END OF METHOD!");
   }
   
@@ -270,7 +276,10 @@ d3.csv("hbs_data.csv", function(error, data) {
 
   //plots columns with timeout
   function replot(){
+  	console.log("IN REPLOT");
+  	console.log(temp);
   	plotSingle(temp[index++]);
+  	
   	if(index < temp.length){
   		setTimeout(replot, 1000);
   	}
@@ -418,7 +427,11 @@ d3.csv("hbs_data.csv", function(error, data) {
       console.log("unforseen case");
     }*/
 
-    selected_d_objects.push(d);
+	if(!selected_d_objects.includes(d)){
+    	selected_d_objects.push(d);
+    }
+    console.log("&&&&&&&&&&&&&&& just pushed into selected d objects");
+    console.log(selected_d_objects);
     console.log("DONE");
   } 
   
