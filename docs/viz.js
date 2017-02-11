@@ -1,6 +1,6 @@
 //This file is a continuation of vizTues.js
 
-var margin = {top: 20, right: 20, bottom: 30, left: 100},
+var margin = {top: 20, right: 20, bottom: 60, left: 100},
     width = 960 - margin.left - margin.right,
     height = 600 - margin.top - margin.bottom;
 
@@ -44,7 +44,7 @@ var inner = svg.append("g")
 var active_link = "0"; //to control legend selections and hover
 var legendClicked; //to control legend selections
 var legendClassArray = []; //store legend classes to select bars in plotSingle()
-var y_orig; //to store original y-posn
+//var y_orig; //to store original y-posn
 
 d3.csv("hbs_data.csv", function(error, data) {
   if (error) throw error;
@@ -65,10 +65,20 @@ d3.csv("hbs_data.csv", function(error, data) {
   x.domain(data.map(function(d) { return d.Week; }));
   y.domain([0, d3.max(data, function(d) { return d.total; })]);
 
+  //creates x axis
   svg.append("g")
       .attr("class", "x axis")
       .attr("transform", "translate(0," + height + ")")
       .call(xAxis);
+
+
+      
+//Create X axis label   
+    svg.append("text")
+    .attr("x", width / 2 )
+    .attr("y",  height + margin.bottom -10)
+    .style("text-anchor", "middle")
+    .text("Week");
 
   svg.append("g")
       .attr("class", "y axis")
@@ -78,7 +88,16 @@ d3.csv("hbs_data.csv", function(error, data) {
       .attr("y", 6)
       .attr("dy", ".71em")
       .style("text-anchor", "end");
-      //.text("Population");
+
+//Create Y axis label
+    svg.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("y", 0-margin.left/2)
+    .attr("x",0 - (height / 2))
+    .attr("dy", "1em")
+    .style("text-anchor", "middle")
+    .text("% of Time");  
+
 
   var week = svg.selectAll(".week")
       .data(data)
@@ -276,12 +295,15 @@ d3.csv("hbs_data.csv", function(error, data) {
 
   //plots columns with timeout
   function replot(){
+  	if(temp.length == 0)
+  		return;
+  	
   	console.log("IN REPLOT");
   	console.log(temp);
   	plotSingle(temp[index++]);
   	
   	if(index < temp.length){
-  		setTimeout(replot, 1000);
+  		setTimeout(replot, 500);  //can keep playing with this number
   	}
   }
 
@@ -289,7 +311,7 @@ d3.csv("hbs_data.csv", function(error, data) {
 
   //dict of all original y positions to help with restoration
   //key: d, value: y_keep
-  y_orig = [];  
+/*  y_orig = [];  */
   new_y_list = []; //array of the next y position to plot single col onto
   selected_cols = []; 
   selected_d_objects = [];
@@ -338,99 +360,66 @@ d3.csv("hbs_data.csv", function(error, data) {
 
     //store the height and y pos of original, full graph
     orig_height_y = [];
+
+	//lower the bars to start on x-axis   
+	count = 1;
+	week.selectAll("rect").forEach(function (d, i) {  
+		//get height and y posn of base bar and selected bar
+		h_keep = d3.select(d[idx]).attr("height");
+		y_keep = d3.select(d[idx]).attr("y");
+
+		//for testing purposes: keep track of height being added
+		height_added.push(h_keep);
+
+/*
+		//store y_base in array to restore plot
+		y_orig.push({
+		  key: d[idx],
+		  value: y_keep
+		});
+*/
+		//if first time plotting, initialize new_y_list values
+		if(firstTimePlotting){
+			h_base = d3.select(d[0]).attr("height");
+			y_base = d3.select(d[0]).attr("y");   
+
+			h_shift = h_keep - h_base;
+			y_new = y_base - h_shift;
+
+			new_y_list.push(y_new);
+			//reposition selected bars
+			d3.select(d[idx])
+			  .transition()
+			  //.duration(500)
+			  //.delay(500)
+			  .attr("y", y_new);
+		}else{
+			y_new = new_y_list[i] - h_keep;
+			new_y_list[i] = y_new;
+
+			//reposition selected bars
+			d3.select(d[idx])
+			  .transition()
+			  .duration(250)
+			  .delay(200)
+			  .attr("y", y_new);
+		}
+		count++;
+	})  
+	
+	firstTimePlotting = false;	
+	console.log("height added");
+	console.log(height_added);
+	height_added = []; //clear for next column name's set of heights 
+
+	console.log("CASE 1: AFTER ADDING COLUMN, WHAT'S THE VALUE INSIDE NEW_Y_LIST?");
+	console.log(new_y_list);
+
  
-
-    //lower the bars to start on x-axis   
-    if(firstTimePlotting){
-      console.log("case 1");
-      count = 1;
-      week.selectAll("rect").forEach(function (d, i) {  
-        //get height and y posn of base bar and selected bar
-        h_keep = d3.select(d[idx]).attr("height");
-        y_keep = d3.select(d[idx]).attr("y");
-      
-      	//for testing purposes: keep track of height being added
-		height_added.push(h_keep);
-      
-        //store y_base in array to restore plot
-        y_orig.push({
-          key: d[idx],
-          value: y_keep
-        });
-        //console.log(y_orig);
-
-        h_base = d3.select(d[0]).attr("height");
-        y_base = d3.select(d[0]).attr("y");   
-      
-        h_shift = h_keep - h_base;
-        y_new = y_base - h_shift;
-     
-        new_y_list.push(y_new);
-        //reposition selected bars
-        d3.select(d[idx])
-          .transition()
-          .duration(500)
-          .delay(500)
-          .attr("y", y_new);
-        
-      	count++;
-      })  
-      
-      console.log("height added");
-  	  console.log(height_added);
-      height_added = []; //clear for next column name's set of heights 
-      
-      console.log("CASE 1: AFTER ADDING COLUMN, WHAT'S THE VALUE INSIDE NEW_Y_LIST?");
-      console.log(new_y_list);
-      firstTimePlotting = false;
-    }else{
-      console.log("case > 1");
-      count = 1;
-      week.selectAll("rect").forEach(function (d, i) {  
-        //get height and y posn of base bar and selected bar
-        h_keep = d3.select(d[idx]).attr("height");
-        y_keep = d3.select(d[idx]).attr("y");
-        
-        //for testing purposes: keep track of height being added
-		height_added.push(h_keep);
-      
-        
-        //store y_base in array to restore plot
-        y_orig.push({
-          key: d,
-          value: y_keep
-        });
-
-        
-        y_new = new_y_list[i] - h_keep;
-        new_y_list[i] = y_new;
-
-        //reposition selected bars
-        d3.select(d[idx])
-          .transition()
-          .duration(500)
-          .delay(500)
-          .attr("y", y_new);
-        
-      count++;
-      }) 
-      
-      console.log("height added");
-  	  console.log(height_added);
-      height_added = []; //clear for next column name's set of heights 
-      
-      
-	  console.log("CASE >1: AFTER ADDING COLUMN, WHAT'S THE VALUE INSIDE NEW_Y_LIST?");
-      console.log(new_y_list);
-
-    } /*else {
-      console.log("unforseen case");
-    }*/
-
 	if(!selected_d_objects.includes(d)){
     	selected_d_objects.push(d);
     }
-    console.log("&&&&&&&&&&&&&&& just pushed into selected d objects");
+    
     console.log(selected_d_objects);
     console.log("DONE");
   } 
