@@ -23,7 +23,7 @@ var yAxis = d3.svg.axis()
     .tickFormat(d3.format(".2s"));
 
 
-var svg = d3.select("body").append("svg")
+var svg = d3.select("#graph").append("svg")
     //.attr("width", width + margin.left + margin.right)
     .attr("width", width + margin.left + margin.right +200)
     .attr("height", height + margin.top + margin.bottom)
@@ -123,6 +123,7 @@ d3.csv("hbs_data.csv", function(error, data) {
       })
       .style("fill", function(d) { return color(d.name); });
 
+  
   week.selectAll("rect")
        .on("mouseover", function(d){
 
@@ -130,8 +131,11 @@ d3.csv("hbs_data.csv", function(error, data) {
           var xPos = parseFloat(d3.select(this).attr("x"));
           var yPos = parseFloat(d3.select(this).attr("y"));
           var height = parseFloat(d3.select(this).attr("height"))
-
+		  //var label = columnLabels(d.name);
+		  
           d3.select(this).attr("stroke","blue").attr("stroke-width",0.8);
+
+		
 
           svg.append("text")
           .attr("x",xPos)
@@ -167,7 +171,7 @@ d3.csv("hbs_data.csv", function(error, data) {
   class_keep = [];  //don't need
 
   legend.append("rect")
-      .attr("x", width)
+      .attr("x", width )
       .attr("width", 18)
       .attr("height", 18)
       .style("fill", color)
@@ -200,12 +204,25 @@ d3.csv("hbs_data.csv", function(error, data) {
         }                      
       });
 
+
+var columnLabels = {	"s_w_personal_other"	: "Personal/Other",
+  						"s_w_travel"			: "Travel",
+  						"s_w_pr_media_analyst"	: "PR Media Analyst",
+  						"s_w_internal"			: "Internal",
+  						"s_w_customers_partners": "Customer Partners",
+  						"s_w_parent"			: "Parent",
+  						"s_w_old_acquisition"	: "Old Acquisition",
+  						"s_w_new_acquisition" 	: "New Acquisition",
+  						"s_w_topicalmtg"		: "Topical Meeting" };		
+		
   legend.append("text")
-      .attr("x", width - 24)
+      .attr("x", width - 10)
       .attr("y", 9)
       .attr("dy", ".35em")
       .style("text-anchor", "end")
-      .text(function(d) { return d; });
+      .text(function(d) { 
+      	return columnLabels[String(d)]; //print legend labels
+      });
   
 
   //for all ds, restore    
