@@ -189,13 +189,13 @@ function createGraph(view_type){
 			  .attr("x",xPos)
 			  .attr("y",yPos +height/2)
 			  .attr("class","tooltip")
-			  .text(columnLabels[d.name] +": "+ delta); 
+			  .text(columnLabels[d.name] +": "+ delta.toFixed(2)); 
 			}else{
 			  svg.append("text")
 			  .attr("x",xPos)
 			  .attr("y",yPos +height/2)
 			  .attr("class","tooltip")
-			  .text(d.name +": "+ delta); 
+			  .text(d.name +": "+ delta.toFixed(2)); 
 			}
 		  
 		   })
