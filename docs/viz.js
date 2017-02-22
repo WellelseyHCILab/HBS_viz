@@ -19,7 +19,6 @@ function createGraph(view_type){
 		text = "Week of 2015"
 	}
 	
-	
 	var margin = {top: 20, right: 20, bottom: 60, left: 100},
 		width = 960 - margin.left - margin.right,
 		height = 600 - margin.top - margin.bottom;
@@ -45,32 +44,18 @@ function createGraph(view_type){
 
 	var svg = d3.select("#graph").append("svg")
 		//.attr("width", width + margin.left + margin.right)
-		.attr("width", width + margin.left + margin.right +200)
+		.attr("width", width + margin.left + margin.right + 200)
 		.attr("height", height + margin.top + margin.bottom)
 	  .append("g")
 		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-	/*
-	//trying to move legend outside of the graph area
-	var svg = d3.select("body").append("svg")
-		.attr("width", width + margin.left + margin.right)
-		.attr("height", height + margin.top + margin.bottom)
-
-	var inner = svg.append("g")
-		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-	*/
-
 
 	var active_link = "0"; //to control legend selections and hover
 	var legendClicked; //to control legend selections
 	var legendClassArray = []; //store legend classes to select bars in plotSingle()
-	//var y_orig; //to store original y-posn
 
 	d3.csv(fileName, function(error, data) {
 	  if (error) throw error;
 
-	  //this line works!  use period as the parameter for createGraph to update!
-	  //data = inputPredictions(data, "Long Run");
-	  
 	  //if user has entered prediction input, render them in the graph
 	  if(predictions != [])
 	  	data = inputPredictions(data);
@@ -237,7 +222,6 @@ function createGraph(view_type){
 		  .on("click",function(d){        
 			//get active link
 			active_link = this.id.split("id").pop(); //active link = name of column selected
-			//console.log(active_link);
 		
 			//if active link is in active_list, remove it
 			if (active_list.includes(active_link)){ 
