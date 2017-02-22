@@ -2,24 +2,9 @@
 //this function creates the weekly graph
 
 //global variables
-var default_view = "Monthly";
-var data = null;
-//array of user input predictions 
-var predictions = [];
+default_view = "Monthly";
 
-function createGraph(view_type){
-	var fileName = null;
-	var text = null;  //for x-axis label
-	
-	if(default_view === "Monthly"){
-		fileName = "hbs_monthly.csv";
-		text = "Month of 2015";
-	}else{
-		fileName = "hbs_data.csv";
-		text = "Week of 2015"
-	}
-	
-	
+function createWeeklyGraph(){
 	var margin = {top: 20, right: 20, bottom: 60, left: 100},
 		width = 960 - margin.left - margin.right,
 		height = 600 - margin.top - margin.bottom;
@@ -31,7 +16,7 @@ function createGraph(view_type){
 		.rangeRound([height, 0]);
 
 	var color = d3.scale.ordinal()
-		.range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00", "#990000", "#CD5C5C"]);
+		.range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
 
 	var xAxis = d3.svg.axis()
 		.scale(x)
@@ -65,42 +50,23 @@ function createGraph(view_type){
 	var legendClassArray = []; //store legend classes to select bars in plotSingle()
 	//var y_orig; //to store original y-posn
 
-	d3.csv(fileName, function(error, data) {
+	d3.csv("hbs_data.csv", function(error, data) {
 	  if (error) throw error;
 
-	  //this line works!  use period as the parameter for createGraph to update!
-	  //data = inputPredictions(data, "Long Run");
-	  
-	  //if user has entered prediction input, render them in the graph
-	  if(predictions != [])
-	  	data = inputPredictions(data);
-	  
-	
-	  if(default_view === "Weekly")
-	  	color.domain(d3.keys(data[0]).filter(function(key) { return key !== "Week"; }));
-	  else
-	  	color.domain(d3.keys(data[0]).filter(function(key) { return key !== "Month" && key !== "Average Daily Hours"; }));
+	  color.domain(d3.keys(data[0]).filter(function(key) { return key !== "Week"; }));
+
 	  data.forEach(function(d) {
-	  	var time = null;
-	  	if(default_view === "Weekly")
-			time = d.Week; //add to stock code
-		else
-			time = d.Month;
+		var myweek = d.Week; //add to stock code
 		var y0 = 0;
 		//d.ages = color.domain().map(function(name) { return {name: name, y0: y0, y1: y0 += +d[name]}; });
-		d.ages = color.domain().map(function(name) { return {time:time, name: name, y0: y0, y1: y0 += +d[name]}; });
+		d.ages = color.domain().map(function(name) { return {myweek:myweek, name: name, y0: y0, y1: y0 += +d[name]}; });
 		d.total = d.ages[d.ages.length - 1].y1;
 
 	  });
-		//time = time
+
 
 	  //scale the range of the data
-	  x.domain(data.map(function(d) { 
-	  		if(default_view === "Weekly")
-	  			return d.Week; 
-	  		else
-	  			return d.Month
-	  }));
+	  x.domain(data.map(function(d) { return d.Week; }));
 	  y.domain([0, d3.max(data, function(d) { return d.total; })]);
 
 	  //creates x axis
@@ -108,13 +74,15 @@ function createGraph(view_type){
 		  .attr("class", "x axis")
 		  .attr("transform", "translate(0," + height + ")")
 		  .call(xAxis);
+
+
 	  
 	//Create X axis label   
 		svg.append("text")
 		.attr("x", width / 2 )
 		.attr("y",  height + margin.bottom -10)
 		.style("text-anchor", "middle")
-		.text(text);
+		.text("Week");
 
 	  svg.append("g")
 		  .attr("class", "y axis")
@@ -132,9 +100,9 @@ function createGraph(view_type){
 		.attr("x",0 - (height / 2))
 		.attr("dy", "1em")
 		.style("text-anchor", "middle")
-		.text("Percentage of Time");  
+		.text("% of Time");  
 
-		//week = time
+
 	  var week = svg.selectAll(".week")
 		  .data(data)
 		.enter().append("g")
@@ -148,11 +116,9 @@ function createGraph(view_type){
 		  })
 		.enter().append("rect")
 		  .attr("width", x.rangeBand())
-		  .attr("y", function(d) { 
-		  	return y(d.y1); 
-		  })
+		  .attr("y", function(d) { return y(d.y1); })
 		  .attr("x",function(d) { //add to stock code
-			  return x(d.time)
+			  return x(d.myweek)
 			})
 		  .attr("height", function(d) { return y(d.y0) - y(d.y1); })
 		  .attr("class", function(d) {
@@ -198,7 +164,7 @@ function createGraph(view_type){
 			legendClassArray.push(d.replace(/\s/g, '')); //remove spaces
 			return "legend";
 		  })
-		  .attr("transform", function(d, i) { return "translate(200," + (i * 20) + ")"; }); 
+		  .attr("transform", function(d, i) { return "translate(150," + (i * 20) + ")"; }); 
 		  //.attr("transform", function(d, i) { return "translate(" + (width - 600) + "," + (margin.top + i) * 20 + ")"; }); 
 
 
@@ -243,7 +209,7 @@ function createGraph(view_type){
 		  });
 
 
-	 var columnLabels = {	"s_w_personal_other"	: "Personal/Other",
+	var columnLabels = {	"s_w_personal_other"	: "Personal/Other",
 							"s_w_travel"			: "Travel",
 							"s_w_pr_media_analyst"	: "PR Media Analyst",
 							"s_w_internal"			: "Internal",
@@ -259,10 +225,7 @@ function createGraph(view_type){
 		  .attr("dy", ".35em")
 		  .style("text-anchor", "end")
 		  .text(function(d) { 
-		  	if(default_view === "Monthly")
-		  		return String(d);
-		  	else
-				return columnLabels[String(d)]; //print legend labels
+			return columnLabels[String(d)]; //print legend labels
 		  });
   
 
@@ -396,7 +359,7 @@ function createGraph(view_type){
 	
 		console.log("SELECTED COLS INCLUDES");
 		console.log(selected_cols);
-		console.log(JSON.stringify(legendClassArray));
+	
 	
 		//erase all but selected bars by setting opacity to 0
 		//legendClassArray holds all col names
@@ -416,37 +379,35 @@ function createGraph(view_type){
 		  }
 		}
 
+		//store the height and y pos of original, full graph
+		orig_height_y = [];
 
 		//lower the bars to start on x-axis   
 		count = 1;
 		week.selectAll("rect").forEach(function (d, i) {  
 			//get height and y posn of base bar and selected bar
-			h_keep = parseInt(d3.select(d[idx]).attr("height"));
+			h_keep = d3.select(d[idx]).attr("height");
 			y_keep = d3.select(d[idx]).attr("y");
 
 			//for testing purposes: keep track of height being added
 			height_added.push(h_keep);
 
+	/*
+			//store y_base in array to restore plot
+			y_orig.push({
+			  key: d[idx],
+			  value: y_keep
+			});
+	*/
 			//if first time plotting, initialize new_y_list values
 			if(firstTimePlotting){
-				h_base = parseInt(d3.select(d[0]).attr("height")); //height of rectangle
+				h_base = d3.select(d[0]).attr("height");
 				y_base = d3.select(d[0]).attr("y");   
 
 				h_shift = h_keep - h_base;
-				y_new = y_base - h_shift; //the y-coord we should graph next col from
-				
+				y_new = y_base - h_shift;
+
 				new_y_list.push(y_new);
-				
-				/* testing
-				console.log(d3.select(d[idx]).attr("height"));
-				d3.select(d[idx]).attr("height", h_base + 100);  //idx refers to index of col num
-				console.log("AFTER INCREASING HEIGHT OF EACH RECT");
-				console.log(d);
-				console.log(d3.select(d[idx]).attr("height"));
-				*/
-				
-				
-				
 				//reposition selected bars
 				d3.select(d[idx])
 				  .transition()
@@ -487,56 +448,10 @@ function createGraph(view_type){
 	});
 }//end graphWeekly
 
+function graphMonthly(){
 
-
-function handlePredictions(){
-	
-	var period_indices = {
-		"short": 6,
-		"med": 7,
-		"long": 8
-	}
-
-	for(var i = 1; i <= 24; i++){
-		var element = document.getElementById(i.toString());
-		var period_col_array = (element.name).split("_");
-		var period = period_col_array[0];
-		var colName = period_col_array[1];
-		var value = element.value;
-		
-		//add each update to predictions array
-		predictions.push({"period": period, "colName": colName, "value": value});
-
-	}
-	refreshGraph(default_view);
+	console.log("hi");
 }
-
-
-function inputPredictions(data_array){
-	var current_data_array = data_array;  //makes copy of data
-	
-	var period_indices = {
-		"short": 6,
-		"med": 7,
-		"long": 8
-	}
-	
-	//for each item in predictions, set the object's value to the user input's value
-	for(var i = 0; i < predictions.length; i++){
-		var dict = predictions[i];
-		var period = dict["period"];
-		var index = period_indices[period]; 
-		//returns obj with each col's value given a period
-		var period_obj = current_data_array[index];
-		
-		var colName = dict["colName"];
-		var value = dict["value"];
-		period_obj[colName] = value;
-	}
-	
-	return current_data_array;
-}
-
 
 function removeGraph(){
 	$('#graph').empty();
@@ -546,30 +461,13 @@ function removeGraph(){
 function toggleGraph() {
 	removeGraph();
 	if(default_view === "Monthly"){
+		createWeeklyGraph();
 		default_view = "Weekly";
-		$("#toggle_button").attr('value', 'Change to Monthly');
 	}else{ 
+		createMonthlyGraph();
 		default_view = "Monthly";
-		$("#toggle_button").attr('value', 'Change to Weekly');
 	}
-	createGraph(default_view);
 }
-
-
-//refreshes the current graph to restore original column order
-function refreshGraph(){
-	removeGraph();
-	//refreshData();
-	createGraph(default_view);
-}
-
-
-//handler for Reset Button in form
-function reset_input(){
-	predictions = [];
-	refreshGraph();
-}
-
 
 //Prototype to remove object from array, removes first
 //matching object only
@@ -581,6 +479,5 @@ Array.prototype.remove = function (v) {
     return false;
 }
 
-
 //execute the following function when the page loads:
-createGraph(default_view);
+createMonthlyGraph();
