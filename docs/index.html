@@ -45,7 +45,8 @@ http://bl.ocks.org/yuuniverse4444/8325617
 	<div class="manipulate">
 		<form name="predictions" action="javascript:handlePredictions()">
 
-		  <fieldset>
+		  <fieldset class="fieldset">
+		  
 			<legend>Your Predictions</legend>
 			<p>Project your desired time use in the short, medium and long run below. "Add Data" will visualize your projections.</p>
 			<table>
@@ -61,7 +62,7 @@ http://bl.ocks.org/yuuniverse4444/8325617
 				<th>Discussing new strategic acquisition</th>
 			</tr>
 			<tr>
-				<td><b>Short Run</b></td>
+				<td width="40"><b>Short</b></td>
 				<td><input id="1" type='text' name='short_On Personal Activities' value='0'></td>
 				<td><input id="2" type='text' name='short_On Travel' value='0'></td>
 				<td><input id="3" type='text' name='short_With PR and Media and Analysts' value='0'></td>
@@ -73,7 +74,7 @@ http://bl.ocks.org/yuuniverse4444/8325617
 				<td></td>
 			</tr>
 			<tr>
-				<td><b>Medium Run</b></td>
+				<td><b>Medium</b></td>
 				<td><input id="9" type='text' name='med_On Personal Activities' value='0'></td>
 				<td><input id="10" type='text' name='med_On Travel' value='0'></td>
 				<td><input id="11" type='text' name='med_With PR and Media and Analysts' value='0'></td>
@@ -85,7 +86,7 @@ http://bl.ocks.org/yuuniverse4444/8325617
 				<td></td>
 			</tr>
 			<tr>
-				<td><b>Long Run</b></td>
+				<td><b>Long</b></td>
 				<td><input id="17" type='text' name='long_On Personal Activities' value='0'></td>
 				<td><input id="18" type='text' name='long_On Travel' value='0'></td>
 				<td><input id="19" type='text' name='long_With PR and Media and Analysts' value='0'></td>
@@ -97,12 +98,15 @@ http://bl.ocks.org/yuuniverse4444/8325617
 				<td></td>
 			</tr>
 			</table>
-		  </fieldset>    
-
-		  <p>
+		
+		
+			<br><br>
 			<input type='submit' name='submit' value='Add Data'>
 			<input type='reset' name='reset' value='Reset' onclick='javascript:reset_input()'>
 			
+		  </fieldset>    
+
+		  
 		</form>
 	
 	</div>

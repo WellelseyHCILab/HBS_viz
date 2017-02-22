@@ -22,11 +22,22 @@ body {
 	float: left;
 }*/
 
+.fieldset {
+    display: inline-block;
+}
+
+table{
+	width: 400px;
+}
+
+
+
 .manipulate{
 	padding-top: 50px;
 	padding-left: 50px;
 	padding-bottom: 50px;
 }
+
 
 .axis path,
 .axis line {
