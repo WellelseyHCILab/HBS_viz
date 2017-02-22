@@ -161,7 +161,17 @@ function createGraph(view_type){
 		  })
 		  .style("fill", function(d) { return color(d.name); });
 
-  
+  		
+  	 var columnLabels = {	"s_w_personal_other"	: "Personal/Other",
+							"s_w_travel"			: "Travel",
+							"s_w_pr_media_analyst"	: "PR Media Analyst",
+							"s_w_internal"			: "Internal",
+							"s_w_customers_partners": "Customer Partners",
+							"s_w_parent"			: "Parent",
+							"s_w_old_acquisition"	: "Old Acquisition",
+							"s_w_new_acquisition" 	: "New Acquisition",
+							"s_w_topicalmtg"		: "Topical Meeting" };		
+							
 	  week.selectAll("rect")
 		   .on("mouseover", function(d){
 
@@ -174,12 +184,19 @@ function createGraph(view_type){
 			  d3.select(this).attr("stroke","blue").attr("stroke-width",0.8);
 
 		
-
+			if(default_view === "Weekly"){
+			  svg.append("text")
+			  .attr("x",xPos)
+			  .attr("y",yPos +height/2)
+			  .attr("class","tooltip")
+			  .text(columnLabels[d.name] +": "+ delta); 
+			}else{
 			  svg.append("text")
 			  .attr("x",xPos)
 			  .attr("y",yPos +height/2)
 			  .attr("class","tooltip")
 			  .text(d.name +": "+ delta); 
+			}
 		  
 		   })
 		   .on("mouseout",function(){
@@ -243,15 +260,7 @@ function createGraph(view_type){
 		  });
 
 
-	 var columnLabels = {	"s_w_personal_other"	: "Personal/Other",
-							"s_w_travel"			: "Travel",
-							"s_w_pr_media_analyst"	: "PR Media Analyst",
-							"s_w_internal"			: "Internal",
-							"s_w_customers_partners": "Customer Partners",
-							"s_w_parent"			: "Parent",
-							"s_w_old_acquisition"	: "Old Acquisition",
-							"s_w_new_acquisition" 	: "New Acquisition",
-							"s_w_topicalmtg"		: "Topical Meeting" };		
+	
 		
 	  legend.append("text")
 		  .attr("x", width - 10)
@@ -547,10 +556,10 @@ function toggleGraph() {
 	removeGraph();
 	if(default_view === "Monthly"){
 		default_view = "Weekly";
-		$("#toggle_button").attr('value', 'Change to Monthly');
+		$("#toggle_button").html('See Monthly Graph');
 	}else{ 
 		default_view = "Monthly";
-		$("#toggle_button").attr('value', 'Change to Weekly');
+		$("#toggle_button").html('See Weekly Graph');
 	}
 	createGraph(default_view);
 }
