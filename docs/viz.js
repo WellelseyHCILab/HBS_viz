@@ -15,7 +15,7 @@ function createGraph(view_type){
 		fileName = "hbs_monthly.csv";
 		text = "Month of 2015";
 	}else{
-		fileName = "hbs_data.csv";
+		fileName = "HBS_weekly_data_may.csv";
 		text = "Week of 2015"
 	}
 	
@@ -146,7 +146,7 @@ function createGraph(view_type){
 		  })
 		  .style("fill", function(d) { return color(d.name); });
 
-  		
+  		/*
   	 var columnLabels = {	"s_w_personal_other"	: "Personal/Other",
 							"s_w_travel"			: "Travel",
 							"s_w_pr_media_analyst"	: "PR Media Analyst",
@@ -156,7 +156,17 @@ function createGraph(view_type){
 							"s_w_old_acquisition"	: "Old Acquisition",
 							"s_w_new_acquisition" 	: "New Acquisition",
 							"s_w_topicalmtg"		: "Topical Meeting" };		
-							
+		*/
+		
+	  var columnLabels = {	"s_w_personal_other"	: "On Personal Activities",
+							"s_w_travel"			: "On Travel",
+							"s_w_pr_media_analyst"	: "With PR and Media and Analysts",
+							"s_w_internal"			: "In Internal Meetings",
+							"s_w_customers_partners": "Customer Partners",
+							"s_w_emc_federation"	: "With Board including parent company",
+							"s_w_board_airwatch"	: "With Airwatch Board",
+							"s_w_csb_virtustream" 	: "Discussing new strategic acquisition" };		
+													
 	  week.selectAll("rect")
 		   .on("mouseover", function(d){
 
