@@ -1,7 +1,7 @@
 <!--
 Grace Hu
 HBS Time Management Viz
-Feb 2, 2017
+March 14, 2017
 
 helped by: 
 http://bl.ocks.org/katirg/5f168b5c884b1f9c36a5
@@ -14,105 +14,65 @@ http://bl.ocks.org/yuuniverse4444/8325617
 	<!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
 	<link rel="stylesheet" type="text/css" href="style.css">
-	
-	
-	 <!-- Bootstrap CSS 
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
-	-->
 	
 	<!-- D3 -->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.13/d3.min.js"></script>
+
+	<!-- D3 Tooltip -->	
+	<script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
 	
 	<!-- JQuery -->
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-	
-	
+
+	<!-- D3's sliders-->
+	<script src="d3.slider.js"></script>
+	<link rel="stylesheet" type="text/css" href="d3.slider.css">
 </head>
 
 
 <body>
 	<div id='title'>
 		<h1>Case Study: Where Should Pat Gelsinger's Time Go?</h1>
-		<h3>Click the legend squares to select categories.</h3>
-		<button type="button" id="refresh_button" onclick="refreshGraph()">Refresh Graph</button>
-		<button type="button" id="toggle_button" onclick="toggleGraph()">See Weekly Graph</button>
+		<h3>
+			Select the legend squares to view specific categories.<br><br>
+			Click the stacked bars in the <mark id="short">Short</mark>, <mark id="medium">Medium</mark>, and <mark id="long">Long Run</mark> columns to enter your predictions.
+		</h3>
+		<h3> <span id="not100error"></span> </h3>
+
+		<div id="button-wrapper">
+			<button type="button" class="button" id="toggle_button" onclick="toggleGraph()">See Weekly Graph</button>
+			<button type="button" class="button" id="refresh_button" onclick="refreshGraph()">Refresh Graph</button>
+		</div>
 	</div>
-
-	<div id="graph"></div>
 	
-	<div class="manipulate">
-		<form name="predictions" action="javascript:handlePredictions()">
+	
+	<div id="wrapper">
+		<div id="graph"></div>
 
-		  <fieldset class="fieldset">
-		  
-			<legend>Your Predictions</legend>
-			<p>Project your desired time use in the short, medium and long run below. "Add Data" will visualize your projections.</p>
-			<table>
-			<tr>
-				<th>&nbsp;</th>
-				<th>On Personal Activities</th>
-				<th>On Travel</th>
-				<th>PR, Media & Analysts</th>
-				<th>In Internal Meetings</th>
-				<th>With Customers and Partners</th>
-				<th>With Board, including parent company</th>
-				<th>With Airwatch Board</th>
-				<th>Discussing new strategic acquisition</th>
-			</tr>
-			<tr>
-				<td width="40"><b>Short</b></td>
-				<td><input id="1" type='text' name='short_On Personal Activities' value='0'></td>
-				<td><input id="2" type='text' name='short_On Travel' value='0'></td>
-				<td><input id="3" type='text' name='short_With PR and Media and Analysts' value='0'></td>
-				<td><input id="4" type='text' name='short_In Internal Meetings' value='0'></td>
-				<td><input id="5" type='text' name='short_With Customers and Partners' value='0'></td>
-				<td><input id="6" type='text' name='short_With Board including parent company' value='0'></td>
-				<td><input id="7" type='text' name='short_With Airwatch Board' value='0'></td>
-				<td><input id="8" type='text' name='short_Discussing new strategic acquisition' value='0'></td>				
-				<td></td>
-			</tr>
-			<tr>
-				<td><b>Medium</b></td>
-				<td><input id="9" type='text' name='med_On Personal Activities' value='0'></td>
-				<td><input id="10" type='text' name='med_On Travel' value='0'></td>
-				<td><input id="11" type='text' name='med_With PR and Media and Analysts' value='0'></td>
-				<td><input id="12" type='text' name='med_In Internal Meetings' value='0'></td>
-				<td><input id="13" type='text' name='med_With Customers and Partners' value='0'></td>
-				<td><input id="14" type='text' name='med_With Board including parent company' value='0'></td>
-				<td><input id="15" type='text' name='med_With Airwatch Board' value='0'></td>
-				<td><input id="16" type='text' name='med_Discussing new strategic acquisition' value='0'></td>				
-				<td></td>
-			</tr>
-			<tr>
-				<td><b>Long</b></td>
-				<td><input id="17" type='text' name='long_On Personal Activities' value='0'></td>
-				<td><input id="18" type='text' name='long_On Travel' value='0'></td>
-				<td><input id="19" type='text' name='long_With PR and Media and Analysts' value='0'></td>
-				<td><input id="20" type='text' name='long_In Internal Meetings' value='0'></td>
-				<td><input id="21" type='text' name='long_With Customers and Partners' value='0'></td>
-				<td><input id="22" type='text' name='long_With Board including parent company' value='0'></td>
-				<td><input id="23" type='text' name='long_With Airwatch Board' value='0'></td>
-				<td><input id="24" type='text' name='long_Discussing new strategic acquisition' value='0'></td>				
-				<td></td>
-			</tr>
-			</table>
-		
-		
-			<br><br>
-			<input type='submit' name='submit' value='Add Data'>
-			<input type='reset' name='reset' value='Reset' onclick='javascript:reset_input()'>
+		<div id="slider_wrapper">
+			<div id="slider_text">
 			
-		  </fieldset>    
-
-		  
-		</form>
-	
+				<div id="slider_period">
+					<span id="slider_period_text"></span>
+				</div>
+				
+				<div id="slider_column">
+					<span id="slider_column_text"></span>
+				</div>
+				
+				<div id="slider_value">
+					<span id="slider_value_text"></span>
+				</div>
+			
+			</div>
+			
+			<div id="d3slider"></div>
+		
+		</div>	
 	</div>
-
+	
 </body>
 
-<script src="viz.js"></script>
-
+<script src="caseViz.js"></script>
 </html>

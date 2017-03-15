@@ -4,9 +4,35 @@
 //global variables
 var default_view = "Monthly";
 var data = null;
-//array of user input predictions 
-var predictions = [];
+var predictions = []; //array of user input predictions 
+var isPredictionsArrayModifed = false;
+var previouslyClickedItem = null;  //holds the item that was previously clicked/outlined
+var columnLabels = {		"s_w_personal_other"	: "On Personal Activities",
+							"s_w_travel"			: "On Travel",
+							"s_w_pr_media_analyst"	: "With PR and Media and Analysts",
+							"s_w_internal"			: "In Internal Meetings",
+							"s_w_customers_partners": "With Customers and Partners",
+							"s_w_emc_federation"	: "With Board including parent company",
+							"s_w_board_airwatch"	: "With Airwatch Board",
+							"s_w_csb_virtustream" 	: "Discussing new strategic acquisition" };		
 
+var periodArray = ["Short Run", "Medium Run","Long Run"];
+var periodColorArray = ["#17becf", "#d6616b", "#74c476"];
+
+var colArray = ["On Personal Activities",
+				"On Travel",
+				"With PR and Media and Analysts",
+				"In Internal Meetings",
+				"With Customers and Partners",
+				"With Board including parent company",
+				"With Airwatch Board",
+				"Discussing new strategic acquisition" ];	
+
+//for colors corresponding to the columns
+var colorArray = ["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00", "#990000", "#CD5C5C"];
+
+
+//creates the main visualization graph								
 function createGraph(view_type){
 	var fileName = null;
 	var text = null;  //for x-axis label
@@ -19,9 +45,9 @@ function createGraph(view_type){
 		text = "Week of 2015"
 	}
 	
-	var margin = {top: 20, right: 20, bottom: 60, left: 100},
-		width = 960 - margin.left - margin.right,
-		height = 600 - margin.top - margin.bottom;
+	var margin = {top: 20, right: 80, bottom: 60, left: 100},
+		width = 860 - margin.left - margin.right,
+		height = 500 - margin.top - margin.bottom;
 
 	var x = d3.scale.ordinal()
 		.rangeRoundBands([0, width], .1);
@@ -30,7 +56,7 @@ function createGraph(view_type){
 		.rangeRound([height, 0]);
 
 	var color = d3.scale.ordinal()
-		.range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00", "#990000", "#CD5C5C"]);
+		.range(colorArray);
 
 	var xAxis = d3.svg.axis()
 		.scale(x)
@@ -40,7 +66,7 @@ function createGraph(view_type){
 		.scale(y)
 		.orient("left")
 		.tickFormat(d3.format(".2s"));
-
+	
 
 	var svg = d3.select("#graph").append("svg")
 		//.attr("width", width + margin.left + margin.right)
@@ -48,6 +74,7 @@ function createGraph(view_type){
 		.attr("height", height + margin.top + margin.bottom)
 	  .append("g")
 		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+		
 
 	var active_link = "0"; //to control legend selections and hover
 	var legendClicked; //to control legend selections
@@ -57,9 +84,10 @@ function createGraph(view_type){
 	  if (error) throw error;
 
 	  //if user has entered prediction input, render them in the graph
-	  if(predictions != [])
-	  	data = inputPredictions(data);
-	  
+	  if(isPredictionsArrayModifed)
+	  	data = useModifiedData(data);
+	  else
+	  	data = data;
 	
 	  if(default_view === "Weekly")
 	  	color.domain(d3.keys(data[0]).filter(function(key) { return key !== "Week"; }));
@@ -72,7 +100,6 @@ function createGraph(view_type){
 		else
 			time = d.Month;
 		var y0 = 0;
-		//d.ages = color.domain().map(function(name) { return {name: name, y0: y0, y1: y0 += +d[name]}; });
 		d.ages = color.domain().map(function(name) { return {time:time, name: name, y0: y0, y1: y0 += +d[name]}; });
 		d.total = d.ages[d.ages.length - 1].y1;
 
@@ -125,7 +152,27 @@ function createGraph(view_type){
 		.enter().append("g")
 		  .attr("class", "g")
 		  .attr("transform", function(d) { return "translate(" + "0" + ",0)"; });
-		  //.attr("transform", function(d) { return "translate(" + x(d.Week) + ",0)"; })
+	
+	 //initialize tooltip 
+	 var tip = d3.tip()
+	  .attr('class', 'd3-tip')
+	  .offset([-3, 0])
+	  .html(function(d) {
+	  	 	var delta = d.y1 - d.y0; //percentage of each section
+	  	 	var text = "none";
+	  	 	//get corresponding col label
+	  	 	if(default_view === "Weekly")
+				text = columnLabels[d.name]; 
+			else
+			  	text = d.name;
+		
+		//renders tooltip in html	
+		return "<strong>" + text + ":</strong> <span style='color:gold'> " + delta.toFixed(2) + "%</span>";
+	  });
+	  
+
+	  svg.call(tip);
+
 
 	  week.selectAll("rect")
 		  .data(function(d) {
@@ -144,63 +191,86 @@ function createGraph(view_type){
 			classLabel = d.name.replace(/\s/g, ''); //remove spaces
 			return "class" + classLabel;
 		  })
-		  .style("fill", function(d) { return color(d.name); });
-
-  		/*
-  	 var columnLabels = {	"s_w_personal_other"	: "Personal/Other",
-							"s_w_travel"			: "Travel",
-							"s_w_pr_media_analyst"	: "PR Media Analyst",
-							"s_w_internal"			: "Internal",
-							"s_w_customers_partners": "Customer Partners",
-							"s_w_parent"			: "Parent",
-							"s_w_old_acquisition"	: "Old Acquisition",
-							"s_w_new_acquisition" 	: "New Acquisition",
-							"s_w_topicalmtg"		: "Topical Meeting" };		
-		*/
-		
-	  var columnLabels = {	"s_w_personal_other"	: "On Personal Activities",
-							"s_w_travel"			: "On Travel",
-							"s_w_pr_media_analyst"	: "With PR and Media and Analysts",
-							"s_w_internal"			: "In Internal Meetings",
-							"s_w_customers_partners": "Customer Partners",
-							"s_w_emc_federation"	: "With Board including parent company",
-							"s_w_board_airwatch"	: "With Airwatch Board",
-							"s_w_csb_virtustream" 	: "Discussing new strategic acquisition" };		
-													
-	  week.selectAll("rect")
-		   .on("mouseover", function(d){
-
-			  var delta = d.y1 - d.y0;
-			  var xPos = parseFloat(d3.select(this).attr("x"));
-			  var yPos = parseFloat(d3.select(this).attr("y"));
-			  var height = parseFloat(d3.select(this).attr("height"))
-			  //var label = columnLabels(d.name);
-		  
-			  d3.select(this).attr("stroke","blue").attr("stroke-width",0.8);
-
-		
-			if(default_view === "Weekly"){
-			  svg.append("text")
-			  .attr("x",xPos)
-			  .attr("y",yPos +height/2)
-			  .attr("class","tooltip")
-			  .text(columnLabels[d.name] +": "+ delta.toFixed(2)); 
-			}else{
-			  svg.append("text")
-			  .attr("x",xPos)
-			  .attr("y",yPos +height/2)
-			  .attr("class","tooltip")
-			  .text(d.name +": "+ delta.toFixed(2)); 
-			}
-		  
-		   })
-		   .on("mouseout",function(){
-			  svg.select(".tooltip").remove();
-			  d3.select(this).attr("stroke","pink").attr("stroke-width",0.2);
+		  .style("fill", function(d) { return color(d.name); })	
+		  .attr("stroke", function(d) { 
+		  	//make the previously clicked box outlined even after graph updates
+		  	
+		  	if(previouslyClickedItem != null 
+		  			&& previouslyClickedItem.time == d.time 
+		  			&& previouslyClickedItem.name == d.name){  //if prev clicked item matches something in d, then return black 		
+		  		var index = periodArray.indexOf(d.time);
+		  		var color = periodColorArray[index];
+		  		return color;
+		  		
+		  	}
+		  })
+		  .attr("stroke-width", function(d){
+		  	//make the previously clicked box outlined even after graph updates
+		  		if(previouslyClickedItem != null 
+		  		&& previouslyClickedItem.time == d.time 
+		  		&& previouslyClickedItem.name == d.name){  //if prev clicked item matches something in d, then return black
+		  		
+		  		return 5;
+		  		}
+		  })
+		  .on('mouseover', tip.show)
+      	  .on('mouseout', tip.hide)
+	  	  .on("click", function(d){
+				//console.log("BOX CLICKED is: ");	
+				//console.log(this);
+				
+				//if something else is already outlined, clear that outline			
+				if (previouslyClickedItem != d){
+					
+					//remove the previously clicked box outline	
+					week.selectAll("rect")
+					.attr("stroke", function(d) { 		
+						if(previouslyClickedItem != null 
+							&& previouslyClickedItem.time == d.time 
+							&& previouslyClickedItem.name == d.name){  //if prev clicked item matches something in d, then return black
+				
+							return null;			
+						}
+					  })
+					  .attr("stroke-width", function(d){
+						//remove the previously clicked box outline	
+							if(previouslyClickedItem != null 
+							&& previouslyClickedItem.time == d.time 
+							&& previouslyClickedItem.name == d.name){  //if prev clicked item matches something in d, then return black
+				
+							return null;
+							}
+					  })			
+				} //end if
+				
+				previouslyClickedItem = d;
+			
+				//if time is short med or long
+				if(d.time === "Short Run" || d.time === "Medium Run" || d.time === "Long Run" ){
+					var height = d.y1 - d.y0;
 								
-			})
+					//draw outline if box is clicked with color corresponding to period
+					var periodIndex = periodArray.indexOf(d.time);
+					var periodColor = periodColorArray[periodIndex];
+					console.log(periodColor);
+					
+					d3.select(this)
+					.attr("stroke", periodColor)
+					.attr("stroke-width", 5);
+							
+					//use slider to modify the input
+					//try to reference the y1/modify that
+					addSlider(d.time, d.name, height);
+				}else{
+					//remove the slider
+					hideSlider();
+				
+				}
+			});
 
-
+		
+		  
+		  
 
 	  var legend = svg.selectAll(".legend")
 		  .data(color.domain().slice().reverse())
@@ -210,15 +280,13 @@ function createGraph(view_type){
 			legendClassArray.push(d.replace(/\s/g, '')); //remove spaces
 			return "legend";
 		  })
-		  .attr("transform", function(d, i) { return "translate(200," + (i * 20) + ")"; }); 
-		  //.attr("transform", function(d, i) { return "translate(" + (width - 600) + "," + (margin.top + i) * 20 + ")"; }); 
+		  .attr("transform", function(d, i) { return "translate(250," + (i * 20) + ")"; }); 
 
 
 	  //reverse order to match order in which bars are stacked    
 	  legendClassArray = legendClassArray.reverse();
   
 	  active_list = [];
-	  class_keep = [];  //don't need
 
 	  legend.append("rect")
 		  .attr("x", width )
@@ -252,9 +320,6 @@ function createGraph(view_type){
 			  plotSingle(this);
 			}                      
 		  });
-
-
-	
 		
 	  legend.append("text")
 		  .attr("x", width - 10)
@@ -267,27 +332,71 @@ function createGraph(view_type){
 		  	else
 				return columnLabels[String(d)]; //print legend labels
 		  });
-  
+
+
+
+		var sum = 0; //sums up the percentage heights of each bar to display
+		var periods_to_display = null;
+		//label each bar with percentage total
+		week.selectAll("text.week")
+		  .data(function(d) {
+			return d.ages; 
+		  })
+		.enter().append("text")
+		  .attr("class", function(d) {
+			classLabel = d.name.replace(/\s/g, ''); //remove spaces
+			return "class" + classLabel;
+		  })
+		  .attr("x",function(d) { //add to stock code
+			  return x(d.time) + x.rangeBand()/2;
+		  })
+		  .attr("y", function(d) {		   
+		  	return -25; 
+		  })
+		  .attr("dy", "1.35em")
+   		  .attr('style', 'font-size:13px')
+		  .text(function(d) { 		
+		  	//only print totals of relevant columns	
+		  	if(d.name != "Discussing new strategic acquisition" || d.time == ""){
+		  		sum = 0; 
+		  		return "";
+		  	}else{
+		  		sum = d.y1; 	
+		  		
+		  		if(sum != 100 && periodArray.indexOf(d.time) > -1){
+		  			if(periods_to_display != null)
+			  			periods_to_display += ", " + d.time;
+		  			else
+		  				periods_to_display = d.time;
+		  				
+		  			var displayText = "Warning: " + periods_to_display + " predictions must add to 100%";
+		  			
+		  			
+		  			
+		  			$("#not100error")
+		  				.text(displayText)
+		  				.css("color", "red");
+		  			console.log(sum);
+		  		}
+		  		return sum.toFixed(1);
+		  	}
+		  })
+		  .style({ "fill": "blue", "text-anchor": "middle"})
+		  
 
 	  //for all ds, restore    
-	  temp = [];
+	  temp = []; 
+ 
  
 	  //only for one d
 	  function restorePlot(d) {
-		temp =[];
-		console.log("restoring");
-		console.log(d);
-		temp.push(d);
+		temp =[d];
 	
-		console.log(selected_cols);
+		//remove selected col
 		selected_cols.remove(d.id.split("id").pop());
-		console.log("SELECTED COLS JUST REMOVED");
-		console.log(selected_cols);
-	
+		
 		last_elem = selected_d_objects.length - 1;
 	
-		console.log("%%%%%%%%%%selected d objects array");
-		console.log(selected_d_objects);
 		//push all other cols above deselected one into temp array
 		while(selected_d_objects[last_elem] != d){
 			if(!temp.includes(selected_d_objects[last_elem])){
@@ -295,9 +404,6 @@ function createGraph(view_type){
 			}
 			last_elem--;
 		}
-   
-	   console.log("WHATS IN TEMP!!!!!!!!!!!!!!!");
-	   console.log(temp);
    
 		//erase columns above and including d
 		for (i = 0; i < temp.length; i++) {
@@ -313,7 +419,6 @@ function createGraph(view_type){
 	
 		//for each column in temp, get the index, 
 		//and subtract height from y list value   
-		height_removed = [];
 		for (i = 0; i < temp.length; i++) {
 			col = temp[i].id.split("id").pop(); //the column name that we selected
 			idx = legendClassArray.indexOf(col); 
@@ -322,36 +427,24 @@ function createGraph(view_type){
 			week.selectAll("rect").forEach(function (d, i) {  
 			  //get height and y posn of base bar and selected bar
 			  h_keep = d3.select(d[idx]).attr("height");
-			  height_removed.push(h_keep);
 			  new_y_list[i] =  parseInt(new_y_list[i])+ parseInt(h_keep);     	
 			})
-			console.log("height removed is");
-			console.log(height_removed);
-			height_removed = []; //clear for next column name's set of heights
 		}
 	
-		console.log("new_y_list");
-		console.log(new_y_list);
-
 		//remove desired column
 		selected_d_objects.remove(d);
 		temp.remove(d);
-
+		
 		temp.reverse();
-		console.log(temp);
-	
-		console.log("HERE WE START REPLOTTING!!!!!!!");
+
 		//re-plot remaining items in temp
 		index = 0;  //reset to zero after each deselection, ie each time this function is called
-		if (temp.length > 0){
+		if (temp.length > 0)
 			setTimeout(replot, 0); //delay by 2 seconds
-		}
-
-	
-		console.log("END OF METHOD!");
+			
 	  }
   
-  
+  	  
 	  var index = 0; //for replotting, keeps track of index in temp
 
 	  //plots columns with timeout
@@ -359,8 +452,6 @@ function createGraph(view_type){
 		if(temp.length == 0)
 			return;
 	
-		console.log("IN REPLOT");
-		console.log(temp);
 		plotSingle(temp[index++]);
 	
 		if(index < temp.length){
@@ -369,38 +460,26 @@ function createGraph(view_type){
 	  }
 
 
-
-	  //dict of all original y positions to help with restoration
-	  //key: d, value: y_keep
-	/*  y_orig = [];  */
 	  new_y_list = []; //array of the next y position to plot single col onto
 	  selected_cols = []; 
 	  selected_d_objects = [];
 	  firstTimePlotting = true; //special case for the first time I ever plot a single column
-	  height_added = [];
+	  //height_added = [];
   
   
 	  function plotSingle(d) {
 		console.log("I am plotting this rectangle d:");
 		console.log(d);
+		
 		col = d.id.split("id").pop(); //the column name that we selected
 		idx = legendClassArray.indexOf(col); 
-		//holds dict: key: col, value:index
-		class_keep.push({
-		  key: col,
-		  value: idx
-		});
   
 		//if col is not in selected_cols, then add it
 		//otherwise, don't do anything
 		if (!selected_cols.includes(col)){
 			selected_cols.push(col);
 		}
-	
-		console.log("SELECTED COLS INCLUDES");
-		console.log(selected_cols);
-		console.log(JSON.stringify(legendClassArray));
-	
+
 		//erase all but selected bars by setting opacity to 0
 		//legendClassArray holds all col names
 		for (i = 0; i < legendClassArray.length; i++) {
@@ -411,7 +490,6 @@ function createGraph(view_type){
 			  //.duration(1000)          
 			  .style("opacity", 0);
 		  } else { //previously erased, now unerase
-
 			d3.selectAll(".class" + legendClassArray[i])
 			  .transition()
 			  //.duration(200)          
@@ -419,16 +497,11 @@ function createGraph(view_type){
 		  }
 		}
 
-
 		//lower the bars to start on x-axis   
-		count = 1;
 		week.selectAll("rect").forEach(function (d, i) {  
 			//get height and y posn of base bar and selected bar
 			h_keep = parseInt(d3.select(d[idx]).attr("height"));
 			y_keep = d3.select(d[idx]).attr("y");
-
-			//for testing purposes: keep track of height being added
-			height_added.push(h_keep);
 
 			//if first time plotting, initialize new_y_list values
 			if(firstTimePlotting){
@@ -439,17 +512,7 @@ function createGraph(view_type){
 				y_new = y_base - h_shift; //the y-coord we should graph next col from
 				
 				new_y_list.push(y_new);
-				
-				/* testing
-				console.log(d3.select(d[idx]).attr("height"));
-				d3.select(d[idx]).attr("height", h_base + 100);  //idx refers to index of col num
-				console.log("AFTER INCREASING HEIGHT OF EACH RECT");
-				console.log(d);
-				console.log(d3.select(d[idx]).attr("height"));
-				*/
-				
-				
-				
+			
 				//reposition selected bars
 				d3.select(d[idx])
 				  .transition()
@@ -467,83 +530,86 @@ function createGraph(view_type){
 				  .delay(200)
 				  .attr("y", y_new);
 			}
-			count++;
 		})  
 	
 		firstTimePlotting = false;	
-		console.log("height added");
-		console.log(height_added);
-		height_added = []; //clear for next column name's set of heights 
 
-		console.log("CASE 1: AFTER ADDING COLUMN, WHAT'S THE VALUE INSIDE NEW_Y_LIST?");
-		console.log(new_y_list);
-
- 
-		if(!selected_d_objects.includes(d)){
+		if(!selected_d_objects.includes(d))
 			selected_d_objects.push(d);
-		}
-	
-		console.log(selected_d_objects);
-		console.log("DONE");
-	  } 
-  
+			
+	  }   
 	});
 }//end graphWeekly
 
 
-
-function handlePredictions(){
-	
-	var period_indices = {
-		"short": 6,
-		"med": 7,
-		"long": 8
+//initializes predictions array 
+//each element of predictions is a dict with keys period, colName, and value
+function initializePredictionsArray(){
+							
+	for(var i = 0; i < periodArray.length; i++){
+		for(var j = 0; j < colArray.length; j++){
+			predictions.push({	"period": periodArray[i], 
+								"colName": colArray[j],
+								"value": 12.5
+							 });
+							 
+		}
 	}
-
-	for(var i = 1; i <= 24; i++){
-		var element = document.getElementById(i.toString());
-		var period_col_array = (element.name).split("_");
-		var period = period_col_array[0];
-		var colName = period_col_array[1];
-		var value = element.value;
-		
-		//add each update to predictions array
-		predictions.push({"period": period, "colName": colName, "value": value});
-
-	}
-	refreshGraph(default_view);
 }
 
 
-function inputPredictions(data_array){
+//any updates to predictions array is done here
+function updatePredictionsArray(period, col, value){
+	//hide slider and output text after we refresh graph
+	//document.getElementById("input_slider").style.visibility = "hidden";
+	//document.getElementById("slider_output").style.visibility = "hidden";
+	
+	for(var i = 0; i < predictions.length; i++){
+		var tempDict = predictions[i];
+		if (tempDict["period"] === period && tempDict["colName"] === col)
+			tempDict["value"] = value;
+	}
+	isPredictionsArrayModifed = true;
+	
+	updateGraph(default_view);
+} 
+
+
+//updates data with user input from slider, aka data that gets changed in predictions
+function useModifiedData( data_array){
 	var current_data_array = data_array;  //makes copy of data
 	
 	var period_indices = {
-		"short": 6,
-		"med": 7,
-		"long": 8
-	}
-	
+		"Short Run": 6,
+		"Medium Run": 7,
+		"Long Run": 8
+	}	
+		
 	//for each item in predictions, set the object's value to the user input's value
 	for(var i = 0; i < predictions.length; i++){
 		var dict = predictions[i];
 		var period = dict["period"];
 		var index = period_indices[period]; 
 		//returns obj with each col's value given a period
-		var period_obj = current_data_array[index];
 		
+		var period_obj = current_data_array[index];		
 		var colName = dict["colName"];
 		var value = dict["value"];
+		/*
+		if(colName == "On Personal Activities" && period == "Short Run")
+			console.log( value);
+		*/
 		period_obj[colName] = value;
 	}
-	
+
 	return current_data_array;
-}
+} 
 
 
 function removeGraph(){
 	$('#graph').empty();
 }
+
 
 //switches graph from monthly to weekly view and vice versa
 function toggleGraph() {
@@ -560,17 +626,18 @@ function toggleGraph() {
 
 
 //refreshes the current graph to restore original column order
-function refreshGraph(){
+function updateGraph(){
+	//console.log("refresh graph");
 	removeGraph();
-	//refreshData();
+	//remove any outdated error message
+	$("#not100error").empty();
 	createGraph(default_view);
 }
 
 
-//handler for Reset Button in form
-function reset_input(){
-	predictions = [];
-	refreshGraph();
+function refreshGraph(){
+	isPredictionsArrayModifed = false;
+	updateGraph(default_view);
 }
 
 
@@ -585,5 +652,96 @@ Array.prototype.remove = function (v) {
 }
 
 
+//adds slider to html file
+function addSlider(period, col, currentValue) {
+	//to refresh slider, need to remove then redraw
+	refreshSlider();
+	showSlider();
+		
+	//eventually read in default from clicked box
+	var sliderValue = currentValue; 
+	console.log(sliderValue);
+	$("#slider_value").text(sliderValue + "%");
+	$("#slider_column_text").text(col);
+	$("#slider_period_text").text(period);
+	
+	//style background color for text box by sliders
+	/*
+	$("#slider_column").css({
+		"background-color": "yellow",
+		"border": "2px solid #a1a1a1",
+		"border-radius": "5px"
+	});*/
+	styleColumnTextBox(col);
+	stylePeriodTextBox(period);
+
+	var slider_details = d3.slider()
+							.value(sliderValue)
+							.orientation("vertical")
+							.axis(true)
+							.min(0)
+							.max(100)
+							.step(1)
+							.on("slide", function(event, value) {
+								//console.log(event);
+								sliderValue = value;
+								d3.select('#slider_value').text(sliderValue + "%");
+								updatePredictionsArray(period, col, sliderValue);
+							});
+
+	d3.select('#d3slider').call(slider_details);
+}
+ 
+ 
+//style background color for column text box by sliders
+function styleColumnTextBox(colName){
+	var col_index = colArray.indexOf(colName);
+	var color = colorArray[col_index];
+
+	$("#slider_column").css({
+		"background-color": color,
+		"border": "2px solid #a1a1a1",
+		"border-radius": "5px"
+	});
+}
+
+//style background color for period text box by sliders
+function stylePeriodTextBox(period){
+	var col_index = periodArray.indexOf(period);
+	var color = periodColorArray[col_index];
+	
+	$("#slider_period").css({
+		"background-color": color,
+		"border": "2px solid #a1a1a1",
+		"border-radius": "5px"
+	});
+
+}
+
+//removes slider from the page
+function refreshSlider(){
+	$('#d3slider').empty();
+	$('#slider_value').empty();
+}
+
+
+function hideSlider(){
+	document.getElementById("slider_wrapper").style.visibility = "hidden";
+}	
+
+
+function showSlider(){
+	document.getElementById("slider_wrapper").style.visibility = "visible";
+}
+
+
+//print predictions array 
+//TO DO: create option to download predictions from csv
+function getPredictions(){
+	console.log(predictions);
+}
+
+
 //execute the following function when the page loads:
+initializePredictionsArray();
 createGraph(default_view);
