@@ -369,7 +369,7 @@ function createGraph(view_type){
 		  			else
 		  				periods_to_display = d.time;
 		  				
-		  			var displayText = "Warning: " + periods_to_display + " predictions must add to 100%";
+		  			var displayText = periods_to_display + " predictions must add to 100%. Continue modifying stacked bars.";
 		  			
 		  			
 		  			
@@ -611,16 +611,37 @@ function removeGraph(){
 }
 
 
+//hides the Short, Med, Long x-axis labels.
+function hideMarkers(){
+	document.getElementById("shortMarker").style.visibility = "hidden";
+	document.getElementById("mediumMarker").style.visibility = "hidden";
+	document.getElementById("longMarker").style.visibility = "hidden";
+	document.getElementById("instructions").style.visibility = "hidden";
+}
+
+
+//show the short, med, long x-axis labels
+function showMarkers(){
+	document.getElementById("shortMarker").style.visibility = "visible";
+	document.getElementById("mediumMarker").style.visibility = "visible";
+	document.getElementById("longMarker").style.visibility = "visible";
+	document.getElementById("instructions").style.visibility = "visible";
+}
+
+
 //switches graph from monthly to weekly view and vice versa
 function toggleGraph() {
 	removeGraph();
 	if(default_view === "Monthly"){
 		default_view = "Weekly";
 		$("#toggle_button").html('See Monthly Graph');
+		hideMarkers();
 	}else{ 
 		default_view = "Monthly";
 		$("#toggle_button").html('See Weekly Graph');
+		showMarkers();
 	}
+	hideSlider();
 	createGraph(default_view);
 }
 
@@ -631,6 +652,7 @@ function updateGraph(){
 	removeGraph();
 	//remove any outdated error message
 	$("#not100error").empty();
+	
 	createGraph(default_view);
 }
 
@@ -638,6 +660,7 @@ function updateGraph(){
 function refreshGraph(){
 	isPredictionsArrayModifed = false;
 	updateGraph(default_view);
+	hideSlider();
 }
 
 
@@ -666,12 +689,6 @@ function addSlider(period, col, currentValue) {
 	$("#slider_period_text").text(period);
 	
 	//style background color for text box by sliders
-	/*
-	$("#slider_column").css({
-		"background-color": "yellow",
-		"border": "2px solid #a1a1a1",
-		"border-radius": "5px"
-	});*/
 	styleColumnTextBox(col);
 	stylePeriodTextBox(period);
 

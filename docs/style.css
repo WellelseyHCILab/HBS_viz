@@ -49,7 +49,28 @@ body {
 	left: 0px;
 }
 
+#not100error{
+	width: 120px;
+}
 
+/***** axis label markers ***/
+#shortMarker{
+	position:absolute;
+	bottom: 0px;
+	left: 574px;
+}
+
+#mediumMarker{
+	position:absolute;
+	bottom: 1px;
+	left: 647px;
+}
+
+#longMarker{
+	position:absolute;
+	bottom: 0px;
+	left: 724px;
+}
 
 /****** d3 slider **/
 #slider_wrapper{
@@ -96,7 +117,7 @@ body {
 }
 
 /*for centering text */
-span {
+.textbox {
   display: inline-block;
   vertical-align: middle;
   line-height: normal;

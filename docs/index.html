@@ -34,12 +34,11 @@ http://bl.ocks.org/yuuniverse4444/8325617
 <body>
 	<div id='title'>
 		<h1>Case Study: Where Should Pat Gelsinger's Time Go?</h1>
-		<h3>
-			Select the legend squares to view specific categories.<br><br>
-			Click the stacked bars in the <mark id="short">Short</mark>, <mark id="medium">Medium</mark>, and <mark id="long">Long Run</mark> columns to enter your predictions.
-		</h3>
-		<h3> <span id="not100error"></span> </h3>
-
+		<h3>Select the legend squares to view specific categories.</h3>
+		<span id="instructions">
+			<h3>Click the stacked bars in the <mark id="short">Short</mark>, <mark id="medium">Medium</mark>, and <mark id="long">Long Run</mark> columns to enter your predictions.</h3>		
+		</span>
+		
 		<div id="button-wrapper">
 			<button type="button" class="button" id="toggle_button" onclick="toggleGraph()">See Weekly Graph</button>
 			<button type="button" class="button" id="refresh_button" onclick="refreshGraph()">Refresh Graph</button>
@@ -54,22 +53,36 @@ http://bl.ocks.org/yuuniverse4444/8325617
 			<div id="slider_text">
 			
 				<div id="slider_period">
-					<span id="slider_period_text"></span>
+					<span class="textbox" id="slider_period_text"></span>
 				</div>
 				
 				<div id="slider_column">
-					<span id="slider_column_text"></span>
+					<span class="textbox" id="slider_column_text"></span>
 				</div>
 				
 				<div id="slider_value">
-					<span id="slider_value_text"></span>
+					<span class="textbox" id="slider_value_text"></span>
 				</div>
+				
+				<span class="textbox" id="not100error"></span>
 			
 			</div>
 			
 			<div id="d3slider"></div>
 		
 		</div>	
+		
+		<!--markers for to cover over x axis labels -->
+		<div id="shortMarker">
+			<h4><mark id="short">Short Run</mark></h4>
+		</div>
+		<div id="mediumMarker">
+			<h5><mark id="medium">Medium Run</mark></h5>
+		</div>
+		<div id="longMarker">
+			<h4><mark id="long">Long Run</mark></h4> 
+		</div>
+		
 	</div>
 	
 </body>
