@@ -1,4 +1,7 @@
 /*
+    Grace Hu
+    This file is responsible for helping create a D3 slider.
+    
     D3.js Slider
     Inspired by jQuery UI Slider
     Copyright (c) 2013, Bjorn Sandvik - http://blog.thematicmapping.org

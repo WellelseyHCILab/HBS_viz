@@ -1,3 +1,9 @@
+/*
+Grace Hu
+This file performs all styling for multiple D3 sliders.
+I primarily use styling relevant to the vertical slider. 
+*/
+
 .d3-slider {
     position: relative;
     font-family: Verdana,Arial,sans-serif;

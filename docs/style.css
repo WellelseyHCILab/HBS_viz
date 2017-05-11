@@ -1,4 +1,15 @@
-/*HBS Viz*/
+/*
+Grace Hu
+style.css
+This file is responsible for styling the following;
+	1. HTML page headings (title section)
+	2. visualization placement/wrappers
+	3. Axis label markers
+	4. Slider positioning
+	5. Buttons
+	6. Tooltip 
+	7. D3 graph axes
+*/
 
 body {
   font: 12px Helvetica;
